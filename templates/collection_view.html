@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div id="sidebar">
+        <h2><a href="{% url 'dashboard' %}">Chroma GUI</a></h2>
+
+        <div class="sidebar-div">
+            {% if list_of_collections %}
+                {% for i in list_of_collections %}
+                    {% with selected_collection=request.resolver_match.kwargs.collection_name %}
+                        <a class="collection-item {% if i.name == selected_collection %}collection-item-selected{% endif %}" href="{% url 'collection_view' i.name %}">{{ i.name }}</a>
+                    {% endwith %}
+                {% endfor %}
+            {% else %}
+                <p>No Collections</p>
+                <button class="sidebar-button">Create One</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="content">
+        <div class="search-bar">
+            <form method="GET" action="{{ request.path }}">
+                {{ search_form }}
+
+                <div class="filter" id="filter-container">
+                     {{ metadata_form }}
+                </div>
+                
+                <div class="btn-container">
+                <!--Filter SVG ICON-->
+                    <button title="filter" id="filter-btn" type="button">
+                    <?xml version="1.0" ?><svg  class="bi bi-filter" fill="#F0F0F0"  viewBox="0 0 16 16"  xmlns="http://www.w3.org/2000/svg"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                    </button>
+                    <button title="search" id="submit-btn" type="submit">
+                    <!--Search SVG ICON-->
+                        <?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background="new 0 0 70 70"  id="Icons" version="1.1" viewBox="0 0 70 70"  xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M51.957,49.129l-8.713-8.713c1.75-2.337,2.799-5.229,2.799-8.373c0-7.732-6.268-14-14-14s-14,6.268-14,14s6.268,14,14,14  c3.144,0,6.036-1.049,8.373-2.799l8.713,8.713L51.957,49.129z M22.043,32.043c0-5.514,4.486-10,10-10c5.514,0,10,4.486,10,10  c0,5.514-4.486,10-10,10C26.529,42.043,22.043,37.557,22.043,32.043z"/></svg>
+                    </button>
+
+                        <button title="reset">
+                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0,0,256,256">
+                                <g fill="#ff0000" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><path d="M0,256v-256h256v256z" id="bgRectangle"></path></g><g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(10.66667,10.66667)"><path d="M4.70703,3.29297l-1.41406,1.41406l7.29297,7.29297l-7.29297,7.29297l1.41406,1.41406l7.29297,-7.29297l7.29297,7.29297l1.41406,-1.41406l-7.29297,-7.29297l7.29297,-7.29297l-1.41406,-1.41406l-7.29297,7.29297z"></path></g></g>
+                                </svg>
+                        </button>
+                    </div>
+                </form>
+        </div>
+        <div class="table-container">
+
+        {% if context_data %}
+            <table>
+                <th>
+                    Document
+                </th>
+                {% for id, embedding, document, metadata in context_data %}
+                    <tr>
+                        <td>
+                            <div class="document-container">
+                                <div class="document-content" id="content-{{ id }}">
+                                    <p>{{ document|truncatewords:100 }}</p>
+                                    <div class="details-row details-hidden" id="details-{{ id }}">
+                                        <strong>ID:</strong> {{ id }}<br><br>
+                                        <strong>Metadata:</strong><br>
+                                        <ul>
+                                            {% for key, value in metadata.items %}
+                                                <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button class="view-more-button" data-target="details-{{ id }}">View More</button>
+                            </div>
+
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            </div>
+
+        <div class="pagination">
+            <form method="get">
+                {% for key, value in request.GET.items %}
+                    {% if key != 'page' %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                    {% endif %}
+                {% endfor %}
+                {% if context_data.has_previous %}
+                    <button type="submit" name="{{ page_form.prefix }}-page" value="1">&laquo; First</button>
+                    <button type="submit" name="{{ page_form.prefix }}-page" value="{{ context_data.previous_page_number }}">Previous</button>
+                {% endif %}
+                <span class="current">
+                    Page {{ context_data.number }} of {{ context_data.paginator.num_pages }}.
+                </span>
+                {% if context_data.has_next %}
+                    <button type="submit" name="{{ page_form.prefix }}-page" value="{{ context_data.next_page_number }}">Next</button>
+                    <button type="submit" name="{{ page_form.prefix }}-page" value="{{ context_data.paginator.num_pages }}">Last &raquo;</button>
+                {% endif %}
+            </form>
+        </div>
+
+        {% else %}
+            <h1>No Data To Visualize</h1>
+        {% endif %}
+    </div>
+    <script src="{% static 'script.js' %}"></script>
+</body>
+</html>

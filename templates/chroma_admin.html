@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        h2 {
+            color: #3;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            height: 250px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input:focus{
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #0000FF;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+
+    </style>
+</head>
+<body>
+    <h2>Chroma Panel</h2>
+    <div>
+        <form method="post" action="{% url 'chroma_login' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" value="Login">
+        </form>
+        {% if error_message %}
+            <p>{{ error_message }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>
